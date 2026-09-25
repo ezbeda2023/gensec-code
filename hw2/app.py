@@ -25,7 +25,8 @@ if __name__ == '__main__':
     print('\nSource Notebook - LangChain RAG application', flush=True)
     print('Ask questions about PDF, TXT, Markdown, CSV, and Jupyter notebook sources.')
     print(f'\nStarting server on {host}:{port}')
-    print(f'Open this URL in your browser once the server starts: {url}')
+    print(f'Open this URL in your browser: {url}')
+    print('A Please wait screen will appear until the chat is ready.')
     print('Upload up to 10 files (10 MB each), then ask a question.')
     print('Open Source links to inspect evidence. Type /upload to replace sources.')
     if missing:
@@ -36,10 +37,18 @@ if __name__ == '__main__':
     print(f'Setup guide: {Path(__file__).with_name("README.md")}')
     print('\nKeep this terminal open. Press Ctrl+C to stop the server.\n', flush=True)
 
-    from chainlit.cli import run_chainlit
-    from chainlit.config import config
+    from startup_screen import LoadingScreen
 
-    config.run.headless = True
+    with LoadingScreen(host, port, os.getenv('CHAINLIT_SSL_CERT'),
+                       os.getenv('CHAINLIT_SSL_KEY')):
+        from chainlit.cli import run_chainlit
+        from chainlit.config import config, load_module
+
+        config.run.headless = True
+        # Warm up the app imports while the loading page remains accessible.
+        # Chainlit loads the callbacks again when it takes over the same port.
+        load_module(str(Path(__file__).resolve()))
+
     run_chainlit(str(Path(__file__).resolve()))
     raise SystemExit(0)
 

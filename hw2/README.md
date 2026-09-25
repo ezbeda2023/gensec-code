@@ -48,10 +48,13 @@ Do not commit `.env` or credentials. Source text is sent to Google services.
 
 ```powershell
 cd hw2
-..\.venv\Scripts\chainlit run app.py
+..\.venv\Scripts\python app.py
 ```
 
-Open the local URL printed by Chainlit. Upload up to 10 files, each at most 10 MB.
+Open the local URL printed in the terminal. A "Please wait" screen appears while
+the app loads and automatically switches to Chainlit when ready. This startup
+screen is provided by the direct Python launcher.
+Upload up to 10 files, each at most 10 MB.
 Use `/upload` to replace sources. A fresh chat starts an empty notebook.
 Collections are held locally without persistence and deleted when the chat ends;
 this is not an authenticated or durable notebook service. Chainlit manages its
