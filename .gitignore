@@ -3,3 +3,5 @@
 .chromadb
 __pycache__
 *.pyc
+.chainlit/
+.files/
