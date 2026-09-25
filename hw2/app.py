@@ -5,8 +5,46 @@ import os
 from pathlib import Path
 from uuid import uuid4
 
-import chainlit as cl
 from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).with_name('.env'))
+
+
+if __name__ == '__main__':
+    host = os.environ.setdefault('CHAINLIT_HOST', '127.0.0.1')
+    port = os.environ.setdefault('CHAINLIT_PORT', '8000')
+    browser_host = 'localhost' if host in {'0.0.0.0', '::'} else host
+    if ':' in browser_host and not browser_host.startswith('['):
+        browser_host = f'[{browser_host}]'
+    scheme = 'https' if os.getenv('CHAINLIT_SSL_CERT') else 'http'
+    root_path = os.getenv('CHAINLIT_ROOT_PATH', '').strip('/')
+    url = f'{scheme}://{browser_host}:{port}/' + root_path
+    missing = [key for key in ('GOOGLE_CLOUD_PROJECT', 'GOOGLE_MODEL', 'GOOGLE_API_KEY')
+               if not os.getenv(key)]
+
+    print('\nSource Notebook - LangChain RAG application', flush=True)
+    print('Ask questions about PDF, TXT, Markdown, CSV, and Jupyter notebook sources.')
+    print(f'\nStarting server on {host}:{port}')
+    print(f'Open this URL in your browser once the server starts: {url}')
+    print('Upload up to 10 files (10 MB each), then ask a question.')
+    print('Open Source links to inspect evidence. Type /upload to replace sources.')
+    if missing:
+        print(f'\nSetup needed: set {", ".join(missing)} in {Path(__file__).with_name(".env")}')
+    else:
+        print('\nRequired environment settings are present (credentials not yet verified).')
+    print('Vertex AI embeddings also require Google Application Default Credentials.')
+    print(f'Setup guide: {Path(__file__).with_name("README.md")}')
+    print('\nKeep this terminal open. Press Ctrl+C to stop the server.\n', flush=True)
+
+    from chainlit.cli import run_chainlit
+    from chainlit.config import config
+
+    config.run.headless = True
+    run_chainlit(str(Path(__file__).resolve()))
+    raise SystemExit(0)
+
+
+import chainlit as cl
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -16,7 +54,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from loaders import load_source, source_label
 
-load_dotenv(Path(__file__).with_name('.env'))
 logger = logging.getLogger(__name__)
 
 PROMPT = ChatPromptTemplate.from_messages([
